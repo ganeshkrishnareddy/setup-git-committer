@@ -1,0 +1,51 @@
+name: 'Setup Git Committer'
+description: 'Configure Git committer identity for automated commits in GitHub Actions workflows'
+author: 'P Ganesh Krishna Reddy <pganeshkrishnareddy@gmail.com>'
+
+branding:
+  icon: 'git-commit'
+  color: 'orange'
+
+inputs:
+  name:
+    description: 'Git committer name'
+    required: false
+    default: 'github-actions[bot]'
+  email:
+    description: 'Git committer email'
+    required: false
+    default: 'github-actions[bot]@users.noreply.github.com'
+  token:
+    description: 'GitHub token for pushing (optional)'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure Git Identity
+      shell: bash
+      run: |
+        echo "Setting up Git committer identity..."
+        git config --global user.name "${{ inputs.name }}"
+        git config --global user.email "${{ inputs.email }}"
+        
+        echo "Git identity configured:"
+        echo "  Name:  $(git config --global user.name)"
+        echo "  Email: $(git config --global user.email)"
+
+    - name: Configure Git Defaults
+      shell: bash
+      run: |
+        git config --global init.defaultBranch main
+        git config --global pull.rebase false
+        git config --global core.autocrlf input
+        echo "Git defaults configured"
+
+    - name: Setup GPG Key (optional)
+      if: inputs.token != ''
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        echo "GitHub token provided - push will use token auth"
